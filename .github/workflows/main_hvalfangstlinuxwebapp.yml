@@ -1,0 +1,110 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
+
+name: Build and deploy Python app to Azure Web App - hvalfangstlinuxwebapp
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Create and start virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+      
+      - name: Install dependencies
+        run: pip install -r server/requirements.txt
+        
+      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+
+      - name: Zip artifact for deployment
+        run: cd server && zip -r ../release.zip ./*
+
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: |
+            release.zip
+            !venv/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
+    env:
+      HVALFANGST_TENANT_ID: ${{ secrets.HVALFANGST_TENANT_ID }}
+      HVALFANGST_API_SERVER_CLIENT_ID: ${{ secrets.HVALFANGST_API_SERVER_CLIENT_ID }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip -d .
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_40531D048E714BC9BF1FF2DB2DD35753 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_336AC753681745D78B7B262945914F63 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_97162121CF214550B81AF6E0B11ADA2C }}
+
+      - name: Check and set environment variables on Azure App Service if not already set
+        run: |
+          # Check for HVALFANGST_TENANT_ID and set it if missing
+          existing_tenant_id=$(az webapp config appsettings list --name hvalfangstlinuxwebapp \
+                                                                 --resource-group hvalfangstresourcegroup \
+                                                                 --query "[?name=='HVALFANGST_TENANT_ID'].value" \
+                                                                 --output tsv)
+          if [ -z "$existing_tenant_id" ]; then
+            echo "Setting HVALFANGST_TENANT_ID..."
+            az webapp config appsettings set --name hvalfangstlinuxwebapp \
+                                             --resource-group hvalfangstresourcegroup \
+                                             --settings HVALFANGST_TENANT_ID=${{ secrets.HVALFANGST_TENANT_ID }}
+          else
+            echo "HVALFANGST_TENANT_ID is already set."
+          fi
+          
+          # Check for HVALFANGST_API_SERVER_CLIENT_ID and set it if missing
+          existing_client_id=$(az webapp config appsettings list --name hvalfangstlinuxwebapp \
+                                                                 --resource-group hvalfangstresourcegroup \
+                                                                 --query "[?name=='HVALFANGST_API_SERVER_CLIENT_ID'].value" \
+                                                                 --output tsv)
+          if [ -z "$existing_client_id" ]; then
+            echo "Setting HVALFANGST_API_SERVER_CLIENT_ID..."
+            az webapp config appsettings set --name hvalfangstlinuxwebapp \
+                                             --resource-group hvalfangstresourcegroup \
+                                             --settings HVALFANGST_API_SERVER_CLIENT_ID=${{ secrets.HVALFANGST_API_SERVER_CLIENT_ID }}
+          else
+            echo "HVALFANGST_API_SERVER_CLIENT_ID is already set."
+          fi
+      
+
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
+        with:
+          app-name: 'hvalfangstlinuxwebapp'
+          slot-name: 'Production'

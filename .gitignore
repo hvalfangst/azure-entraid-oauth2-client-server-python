@@ -1,0 +1,16 @@
+client/.env_oauth
+/infra/terraform.tfvars
+/.idea/.gitignore
+/infra/.terraform.lock.hcl
+/.idea/azure-oauth2-auth-code-flow-fastapi.iml
+/.idea/azure-oauth2-auth-code-flow-fastapi2.iml
+/.idea/codeStyles/codeStyleConfig.xml
+/infra/.terraform/providers/registry.terraform.io/hashicorp/azurerm/4.4.0/windows_amd64/LICENSE.txt
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/codeStyles/Project.xml
+/pu.xml
+/infra/terraform.tfstate
+/infra/terraform.tfstate.backup
+/infra/.terraform/providers/registry.terraform.io/hashicorp/azurerm/4.4.0/windows_amd64/terraform-provider-azurerm_v4.4.0_x5.exe
+/.idea/vcs.xml
