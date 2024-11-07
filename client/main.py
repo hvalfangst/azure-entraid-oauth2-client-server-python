@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from client.routers import auth, heroes
 
 app = FastAPI(
-    title="Hero API",
-    description="An API to manage heroes secure by OAuth 2.0 auth code flow",
+    title="Hvalfangst Client",
+    description="Client accessing our server deployed on Azure Web Apps secured by OAuth 2.0 authorization code flow with OIDC",
     version="1.0.0"
 )
 

@@ -1,5 +1,3 @@
-# client/routers/auth.py
-
 from http.client import HTTPException
 from fastapi import APIRouter, HTTPException, Request
 from client.logger import logger
@@ -8,7 +6,6 @@ from client.services.auth_service import handle_openid_connect_flow
 router = APIRouter()
 
 
-# Example usage in the callback route
 @router.get("/callback")
 async def auth_callback(request: Request):
     """Callback handler for OpenID Connect flow."""
@@ -24,9 +21,9 @@ async def auth_callback(request: Request):
     # Call the OpenID Connect handler function
     try:
         logger.info("Initiating OpenID Connect flow handling")
-        result = await handle_openid_connect_flow(code)
+        decoded_tokens = await handle_openid_connect_flow(code)
         logger.info("OpenID Connect flow completed successfully")
-        return result
+        return decoded_tokens
     except Exception as e:
         logger.error(f"An error occurred during OpenID Connect flow: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error during OpenID Connect flow")

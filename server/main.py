@@ -4,8 +4,8 @@ from logger import logger
 from routers import heroes
 
 app = FastAPI(
-    title="Hero API",
-    description="An API to manage heroes secure by OAuth 2.0 auth code flow",
+    title="Hvalfangst Resource Server",
+    description="Resource server API protected by Oauth 2.0 scopes",
     version="1.0.0"
 )
 

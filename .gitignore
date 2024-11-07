@@ -1,4 +1,4 @@
-/.env_oauth
+client/.env_oauth
 /infra/terraform.tfvars
 /.idea/.gitignore
 /infra/.terraform.lock.hcl

@@ -1,5 +1,3 @@
-# client/models/__init__.py
+from .hero import Hero
 
-from .dnd_hero import DnDHero, AbilityScores, SkillProficiencies, Equipment, Spell
-
-__all__ = ["DnDHero", "AbilityScores", "SkillProficiencies", "Equipment", "Spell"]
+__all__ = ["Hero"]
