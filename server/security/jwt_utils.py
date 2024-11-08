@@ -54,9 +54,20 @@ async def verify_token_signature(token: str = Depends(oauth2_scheme)) -> Decoded
 
         logger.info(f"Token signature successfully verified with public key (kid: {kid})")
 
-        # Ensure `scp` is a list
-        if "scp" in verified_payload and isinstance(verified_payload["scp"], str):
-            verified_payload["scp"] = [verified_payload["scp"]]
+        if "scp" in verified_payload:
+            if isinstance(verified_payload["scp"], str):
+                # Split the `scp` string into a list of scopes if necessary
+                verified_payload["scp"] = verified_payload["scp"].split()
+                logger.info(f"Parsed 'scp' claim into list: {verified_payload['scp']}")
+            elif isinstance(verified_payload["scp"], list):
+                logger.info("Token 'scp' claim is already a list.")
+            else:
+                logger.error(f"Unexpected 'scp' claim format: {type(verified_payload['scp'])}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid JWT: 'scp' claim format is incorrect",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
 
         return DecodedToken(**verified_payload)
 
